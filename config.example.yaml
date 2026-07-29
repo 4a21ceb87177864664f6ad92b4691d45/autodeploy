@@ -1,0 +1,34 @@
+# Zero-Trust AutoDeploy Tool Configuration Example
+# Target Node Specification for Agro-Industry Linux Enterprise Environment
+
+target_node:
+  hostname: "hq-sec-gw01"
+  distro_family: "auto"     # Options: rhel | debian | auto
+  zone: "dmz"               # Options: core_dc | dmz | corporate_lan | iot_scada | llm_enclave
+  ip_address: "10.20.0.10/24"
+  gateway: "10.20.0.1"
+  vlan_id: 200
+  dns_servers:
+    - "10.10.0.2"
+    - "1.1.1.1"
+
+security:
+  enforce_mac: true               # SELinux Enforcing (RHEL) or AppArmor (Debian)
+  enforce_firewall: true          # firewalld (RHEL) / UFW / Nftables (Debian)
+  harden_ssh: true                # Root login disabled, Key-only, strict ciphers
+  harden_sysctl: true             # Kernel & Network IP spoofing defense
+  setup_auditd: true              # CIS/NIST compliance audit rules
+  disable_unused_services: true   # Disable wireless, cups, avahi
+
+cloud_init:
+  admin_username: "secadmin"
+  ssh_authorized_keys:
+    - "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIExamplePublicKeyForZeroTrustAdmin secadmin@agro-industry.org"
+  packages:
+    - "curl"
+    - "git"
+    - "vim"
+    - "audit"
+    - "nftables"
+    - "ufw"
+    - "firewalld"

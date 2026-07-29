@@ -1,0 +1,81 @@
+#cloud-config
+# Jinja2 Cloud-Init Template for Multi-Distro (RHEL / Debian) Zero-Trust Autodeployment
+
+hostname: {{ target_node.hostname }}
+fqdn: {{ target_node.hostname }}.agro.internal
+manage_etc_hosts: true
+
+users:
+  - name: {{ cloud_init.admin_username }}
+    groups: sudo, wheel
+    shell: /bin/bash
+    sudo: ALL=(ALL) NOPASSWD:ALL
+    ssh_authorized_keys:
+{% for key in cloud_init.ssh_authorized_keys %}
+      - {{ key }}
+{% else %}
+      # No SSH public keys provided in configuration
+{% endfor %}
+
+package_update: true
+package_upgrade: true
+
+packages:
+{% for pkg in cloud_init.packages %}
+  - {{ pkg }}
+{% endfor %}
+
+write_files:
+  - path: /etc/sysctl.d/99-zerotrust.conf
+    owner: root:root
+    permissions: '0644'
+    content: |
+      # Zero-Trust Kernel Hardening Parameters
+      net.ipv4.ip_forward = 0
+      net.ipv4.conf.all.send_redirects = 0
+      net.ipv4.conf.default.send_redirects = 0
+      net.ipv4.conf.all.accept_source_route = 0
+      net.ipv4.conf.default.accept_source_route = 0
+      net.ipv4.conf.all.accept_redirects = 0
+      net.ipv4.conf.default.accept_redirects = 0
+      net.ipv4.conf.all.secure_redirects = 0
+      net.ipv4.conf.default.secure_redirects = 0
+      net.ipv4.conf.all.log_martians = 1
+      net.ipv4.conf.default.log_martians = 1
+      net.ipv4.icmp_echo_ignore_broadcasts = 1
+      net.ipv4.icmp_ignore_bogus_error_responses = 1
+      net.ipv4.conf.all.rp_filter = 1
+      net.ipv4.conf.default.rp_filter = 1
+      net.ipv4.tcp_syncookies = 1
+      fs.suid_dumpable = 0
+      kernel.randomize_va_space = 2
+      kernel.dmesg_restrict = 1
+      kernel.kptr_restrict = 2
+
+  - path: /etc/ssh/sshd_config.d/99-zerotrust.conf
+    owner: root:root
+    permissions: '0600'
+    content: |
+      # Zero-Trust SSH Server Hardening
+      PermitRootLogin no
+      PasswordAuthentication no
+      PubkeyAuthentication yes
+      X11Forwarding no
+      MaxAuthTries 3
+      ClientAliveInterval 300
+      ClientAliveCountMax 2
+      AllowTcpForwarding no
+
+runcmd:
+  - sysctl --system
+  - systemctl restart sshd || systemctl restart ssh
+  # Auto-detect distro and apply initial package rules
+  - |
+    if [ -f /etc/redhat-release ]; then
+      setenforce 1 || true
+      sed -i 's/^SELINUX=.*/SELINUX=enforcing/' /etc/selinux/config || true
+      systemctl enable --now auditd || true
+    elif [ -f /etc/debian_version ]; then
+      systemctl enable --now apparmor || true
+      systemctl enable --now auditd || true
+    fi

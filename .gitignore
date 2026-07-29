@@ -1,0 +1,18 @@
+# Python bytecode & cache
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+
+# Environments
+venv/
+env/
+ENV/
+
+# Output directories
+cloud-init-output/
+
+# IDE & OS files
+.DS_Store
+.idea/
+.vscode/

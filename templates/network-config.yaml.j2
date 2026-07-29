@@ -1,0 +1,19 @@
+# Cloud-Init Network Config (Supporting Netplan & NetworkManager/nmstate)
+version: 2
+ethernets:
+  eth0:
+    dhcp4: false
+    addresses:
+      - {{ target_node.ip_address }}
+    routes:
+      - to: default
+        via: {{ target_node.gateway }}
+    nameservers:
+      addresses:
+{% for dns in target_node.dns_servers %}
+        - {{ dns }}
+{% endfor %}
+vlans:
+  vlan.{{ target_node.vlan_id }}:
+    id: {{ target_node.vlan_id }}
+    link: eth0
