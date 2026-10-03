@@ -52,7 +52,7 @@ rhel-autodeploy/
 
 ---
 
-## 🚀 Getting Started
+## Getting Started
 
 ### Prerequisites
 
