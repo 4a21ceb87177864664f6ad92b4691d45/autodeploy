@@ -6,7 +6,7 @@ Built upon the security framework defined in `agro-industry-zero-trust-architect
 
 ---
 
-## 🏗 Directory Structure
+## Directory Structure
 
 ```text
 rhel-autodeploy/
@@ -30,7 +30,7 @@ rhel-autodeploy/
 
 ---
 
-## 🛡 Key Features & Zero-Trust Alignment
+## Key Features & Zero-Trust Alignment
 
 1. **Dual-Distribution Engine**:
    - Auto-detects `/etc/os-release` (or accepts manual override).
